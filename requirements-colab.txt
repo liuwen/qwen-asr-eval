@@ -1,5 +1,7 @@
 qwen-asr
 huggingface_hub[hf_transfer]
+feedparser
+requests
 soundfile
 librosa
 pydub
