@@ -50,16 +50,35 @@ def run(cmd: list[str], *, cwd: str | Path | None = None, check: bool = True) ->
 
 
 def mount_drive() -> None:
+    """Require Drive to be mounted, but do not start an interactive auth flow inside exec.
+
+    `google.colab.drive.mount()` can block/fail under `colab exec`. For CLI runs, mount Drive
+    first with `colab drivemount -s qwen-asr-a100 /content/drive` and finish the browser auth.
+    """
     if not str(DRIVE_ROOT).startswith("/content/drive/"):
-        print("Drive mount skipped because ASR_EVAL_DRIVE_ROOT is not under /content/drive:", DRIVE_ROOT)
+        print("Drive mount check skipped because ASR_EVAL_DRIVE_ROOT is not under /content/drive:", DRIVE_ROOT)
         return
-    try:
+
+    my_drive = Path("/content/drive/MyDrive")
+    if my_drive.exists():
+        print("Drive already mounted:", my_drive)
+        return
+
+    if os.environ.get("ASR_EVAL_INTERACTIVE_DRIVE_MOUNT") == "1":
         from google.colab import drive
 
         drive.mount("/content/drive", force_remount=False)
-        print("Drive mounted at /content/drive")
-    except Exception as exc:
-        raise RuntimeError("Could not mount Google Drive. Open Colab once and authorize Drive access.") from exc
+        if my_drive.exists():
+            print("Drive mounted at /content/drive")
+            return
+
+    raise RuntimeError(
+        "Google Drive is not mounted. For CLI workflow, run this once and authorize in browser:\n"
+        "  colab drivemount -s qwen-asr-a100 /content/drive\n"
+        "Then rerun:\n"
+        "  colab exec -s qwen-asr-a100 --file scripts/colab_smoke_xiaoyuzhou.py\n"
+        "If running inside the notebook UI, run drive.mount('/content/drive') first."
+    )
 
 
 def configure_persistent_cache() -> None:
