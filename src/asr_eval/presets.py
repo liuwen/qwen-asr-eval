@@ -33,7 +33,7 @@ RUNTIME_PRESETS: dict[str, RuntimePreset] = {
     "A100": RuntimePreset(
         name="A100",
         description="Balanced A100 preset. Good default for long podcasts.",
-        chunk_seconds=300,
+        chunk_seconds=600,
         overlap_seconds=5,
         qwen_batch_size=4,
         qwen_max_inference_batch_size=4,
@@ -43,7 +43,7 @@ RUNTIME_PRESETS: dict[str, RuntimePreset] = {
     "H100": RuntimePreset(
         name="H100",
         description="Higher-throughput H100 preset. Increase if stable.",
-        chunk_seconds=300,
+        chunk_seconds=600,
         overlap_seconds=5,
         qwen_batch_size=8,
         qwen_max_inference_batch_size=8,
