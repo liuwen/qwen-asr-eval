@@ -66,11 +66,23 @@ In Colab web UI, add:
 HF_TOKEN
 ```
 
-The script reads it with:
+Notebook/UI cells can read it with:
 
 ```python
 from google.colab import userdata
 HF_TOKEN = userdata.get("HF_TOKEN")
+```
+
+Important CLI caveat: `google.colab.userdata.get("HF_TOKEN")` can time out under `colab exec` with:
+
+```text
+Secrets can only be fetched when running from the Colab UI.
+```
+
+Therefore `scripts/colab_smoke_xiaoyuzhou.py` treats `HF_TOKEN` as optional by default. `Qwen/Qwen3-ASR-1.7B` is public, so public downloads should work without it unless Hugging Face rate-limits or otherwise rejects the request. To make absence fatal, set:
+
+```bash
+ASR_EVAL_REQUIRE_HF_TOKEN=1 colab exec -s qwen-asr-a100 --file scripts/colab_smoke_xiaoyuzhou.py
 ```
 
 Do not add `GH_TOKEN`; the repo is public. Do not add `GEMINI_API_KEY`; `google.colab.ai` is used only for text-to-text triage.
@@ -89,7 +101,7 @@ The smoke script performs an end-to-end verification:
 2. Sets persistent Hugging Face cache paths under Drive.
 3. Clones or pulls `https://github.com/liuwen/qwen-asr-eval.git` into `/content/qwen-asr-eval`.
 4. Installs a minimal dependency set for smoke testing.
-5. Reads `HF_TOKEN` from Colab Secrets.
+5. Uses `HF_TOKEN` if available. Under `colab exec`, Colab Secrets may be unavailable, so absence is non-fatal by default for public model downloads.
 6. Resolves a Xiaoyuzhou episode audio URL. It tries RSSHub first, then falls back to scraping the public episode page for embedded media URLs.
 7. Downloads the source audio only if missing.
 8. Transcodes the first 45 seconds to 16 kHz mono WAV.
@@ -126,6 +138,7 @@ Supported variables:
 | `SMOKE_CHUNK_SECONDS` | `45` | Chunk length for smoke test |
 | `ASR_MODEL` | `Qwen/Qwen3-ASR-1.7B` | Qwen ASR model id |
 | `COLAB_AI_MODEL` | `google/gemini-2.5-flash` | Colab AI text judge model |
+| `ASR_EVAL_REQUIRE_HF_TOKEN` | `0` | Set `1` to fail if `HF_TOKEN` is unavailable under CLI execution |
 
 ## Google Drive account notes
 

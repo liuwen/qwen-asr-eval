@@ -42,6 +42,7 @@ SMOKE_SECONDS = int(os.environ.get("SMOKE_SECONDS", "45"))
 CHUNK_SECONDS = int(os.environ.get("SMOKE_CHUNK_SECONDS", "45"))
 ASR_MODEL = os.environ.get("ASR_MODEL", "Qwen/Qwen3-ASR-1.7B")
 COLAB_AI_MODEL = os.environ.get("COLAB_AI_MODEL", "google/gemini-2.5-flash")
+REQUIRE_HF_TOKEN = os.environ.get("ASR_EVAL_REQUIRE_HF_TOKEN", "0") == "1"
 
 
 def run(cmd: list[str], *, cwd: str | Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -125,6 +126,13 @@ def install_deps() -> None:
 
 
 def configure_hf_token() -> None:
+    """Configure HF_TOKEN when available.
+
+    Colab Secrets are reliably readable from notebook/UI cells, but `google.colab.userdata`
+    can time out under `colab exec`. Qwen/Qwen3-ASR-1.7B is public, so the CLI smoke
+    workflow treats HF_TOKEN as optional by default. Set ASR_EVAL_REQUIRE_HF_TOKEN=1 to
+    make absence fatal.
+    """
     token = os.environ.get("HF_TOKEN")
     if not token:
         try:
@@ -132,9 +140,19 @@ def configure_hf_token() -> None:
 
             token = userdata.get("HF_TOKEN")
         except Exception as exc:
-            print("Could not read Colab Secret HF_TOKEN:", repr(exc))
+            print("Could not read Colab Secret HF_TOKEN under colab exec:", repr(exc))
     if not token:
-        raise RuntimeError("Missing HF_TOKEN. Add it in Colab Secrets first.")
+        message = (
+            "HF_TOKEN is not available to this CLI execution. Continuing without it because "
+            "ASR_EVAL_REQUIRE_HF_TOKEN is not set. Public model downloads should still work; "
+            "if Hugging Face rate-limits or rejects the download, run from the Colab UI or set "
+            "HF_TOKEN in the runtime environment first."
+        )
+        if REQUIRE_HF_TOKEN:
+            raise RuntimeError(message)
+        print("WARNING:", message)
+        return
+
     os.environ["HF_TOKEN"] = token
     try:
         from huggingface_hub import login
@@ -142,7 +160,7 @@ def configure_hf_token() -> None:
         login(token=token, add_to_git_credential=False)
         print("HF_TOKEN configured.")
     except Exception as exc:
-        print("HF login failed, but HF_TOKEN env is set:", repr(exc))
+        print("HF login failed, but HF_TOKEN env is still set:", repr(exc))
 
 
 def main() -> None:
@@ -154,6 +172,7 @@ def main() -> None:
     print("Runs root (persistent):", RUNS_ROOT)
     print("HF cache (persistent):", HF_CACHE_ROOT)
     print("Temp root (ephemeral):", TMP_ROOT)
+    print("Require HF_TOKEN:", REQUIRE_HF_TOKEN)
 
     mount_drive()
     configure_persistent_cache()
