@@ -29,6 +29,20 @@ The notebook should:
 7. Optionally run reference metrics.
 8. Optionally run Colab AI text-only triage.
 
+## Script-driven Colab policy
+
+The preferred automation path is script-driven and documented in `docs/script_driven_colab_workflow.md`.
+
+- Do not require notebook edits after the public GitHub repo is available.
+- Use `scripts/colab_smoke_xiaoyuzhou.py` for an end-to-end smoke test.
+- Require Drive to be mounted before `colab exec`; avoid interactive `drive.mount()` inside CLI-run scripts.
+- Store durable artifacts in Drive:
+  - `/content/drive/MyDrive/asr/audio/`
+  - `/content/drive/MyDrive/asr/qwen-asr-eval/runs/`
+  - `/content/drive/MyDrive/asr/hf_cache/`
+- Treat `/content/...` as ephemeral clone/scratch only.
+- Keep Xiaoyuzhou downloaded audio private for ASR evaluation; do not redistribute source audio or full transcripts unless permitted by the publisher.
+
 ## Evaluation honesty
 
 Without a reference transcript or audio-capable judge, the system cannot know whether the ASR text is faithful to the audio. Text-only LLM judgment is useful for triage, not final quality measurement.
