@@ -178,6 +178,11 @@ def main() -> None:
     configure_persistent_cache()
     ensure_repo()
     install_deps()
+    # `colab exec` runs inside an already-started IPython kernel; after pip install,
+    # the current process may not pick up editable-install path changes. Add src directly.
+    src_path = str(REPO_DIR / "src")
+    if src_path not in sys.path:
+        sys.path.insert(0, src_path)
     configure_hf_token()
 
     from asr_eval.audio import chunk_wav, ffprobe_duration, fmt_ts, write_jsonl
