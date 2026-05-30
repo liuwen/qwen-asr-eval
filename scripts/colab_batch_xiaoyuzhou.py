@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-PUBLIC_REPO_URL = os.environ.get("PUBLIC_REPO_URL", "https://github.com/liuwen/qwen-asr-eval.git")
+PUBLIC_REPO_URL = os.environ.get("PUBLIC_REPO_URL", "https://github.com/YOUR_GITHUB_USERNAME/qwen-asr-eval.git")
 PUBLIC_REPO_BRANCH = os.environ.get("PUBLIC_REPO_BRANCH", "main")
 REPO_DIR = Path(os.environ.get("REPO_DIR", "/content/qwen-asr-eval"))
 DRIVE_ROOT = Path(os.environ.get("ASR_EVAL_DRIVE_ROOT", "/content/drive/MyDrive/asr"))

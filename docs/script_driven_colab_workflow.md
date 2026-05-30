@@ -99,7 +99,7 @@ The smoke script performs an end-to-end verification:
 
 1. Requires Google Drive to already be mounted.
 2. Sets persistent Hugging Face cache paths under Drive.
-3. Clones or pulls `https://github.com/liuwen/qwen-asr-eval.git` into `/content/qwen-asr-eval`.
+3. Clones or pulls `https://github.com/YOUR_GITHUB_USERNAME/qwen-asr-eval.git` into `/content/qwen-asr-eval`.
 4. Installs a minimal dependency set for smoke testing.
 5. Uses `HF_TOKEN` if available. Under `colab exec`, Colab Secrets may be unavailable, so absence is non-fatal by default for public model downloads.
 6. Resolves a Xiaoyuzhou episode audio URL. It tries RSSHub first, then falls back to scraping the public episode page for embedded media URLs.
@@ -126,7 +126,7 @@ Supported variables:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `PUBLIC_REPO_URL` | `https://github.com/liuwen/qwen-asr-eval.git` | Public repo to clone/pull |
+| `PUBLIC_REPO_URL` | `https://github.com/YOUR_GITHUB_USERNAME/qwen-asr-eval.git` | Public repo to clone/pull |
 | `PUBLIC_REPO_BRANCH` | `main` | Branch to checkout |
 | `REPO_DIR` | `/content/qwen-asr-eval` | Ephemeral clone path |
 | `ASR_EVAL_DRIVE_ROOT` | `/content/drive/MyDrive/asr` | Durable root |

@@ -76,7 +76,7 @@ notebooks/qwen3_asr_generic_colab.ipynb
 Open it in Colab:
 
 ```text
-https://colab.research.google.com/github/liuwen/qwen-asr-eval/blob/main/notebooks/qwen3_asr_generic_colab.ipynb
+https://colab.research.google.com/github/YOUR_GITHUB_USERNAME/qwen-asr-eval/blob/main/notebooks/qwen3_asr_generic_colab.ipynb
 ```
 
 It supports Drive paths, direct download URLs, and Xiaoyuzhou episode URLs; provides T4/A100/H100 runtime presets (A100/H100 default to 600s chunks); writes checkpointed outputs to Drive; and includes optional Colab GenAI text-only evaluation, high-fidelity proofreading, and enhancement cells.
