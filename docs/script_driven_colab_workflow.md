@@ -109,7 +109,8 @@ The smoke script performs an end-to-end verification:
 10. Downloads/loads Qwen3-ASR.
 11. Runs Qwen ASR on one small chunk.
 12. Runs `google.colab.ai` text-only quality triage.
-13. Writes JSONL, transcript Markdown/text, and judge JSON into Drive under `runs/<run_id>/outputs/`.
+13. Attempts `google.colab.ai` text-only triage. Under `colab exec`, Colab's internal `MODEL_PROXY_API_KEY` may be unavailable because it is fetched through the same UI-only userdata channel. If unavailable, the script writes a skipped/failed judge JSON instead of failing by default.
+14. Writes JSONL, transcript Markdown/text, and judge JSON into Drive under `runs/<run_id>/outputs/`.
 
 ## Useful environment overrides
 
@@ -139,6 +140,7 @@ Supported variables:
 | `ASR_MODEL` | `Qwen/Qwen3-ASR-1.7B` | Qwen ASR model id |
 | `COLAB_AI_MODEL` | `google/gemini-2.5-flash` | Colab AI text judge model |
 | `ASR_EVAL_REQUIRE_HF_TOKEN` | `0` | Set `1` to fail if `HF_TOKEN` is unavailable under CLI execution |
+| `ASR_EVAL_REQUIRE_COLAB_AI_JUDGE` | `0` | Set `1` to fail if `google.colab.ai` is unavailable under CLI execution |
 
 ## Google Drive account notes
 
@@ -151,6 +153,18 @@ If audio or outputs live in another Google account, recommended options are:
 3. Download/upload through another storage path explicitly instead of relying on Drive mount.
 
 Do not assume two Google accounts' Drives are both locally mounted at the same time under `/content/drive/MyDrive`.
+
+## Colab AI availability caveat
+
+`google.colab.ai` may work in notebook/UI cells while failing under `colab exec` because it internally fetches `MODEL_PROXY_API_KEY` through Colab userdata, and userdata can be UI-only for some executions. This is separate from your `HF_TOKEN` secret.
+
+If strict Colab AI triage is required, run the notebook/UI judge cell after the script has produced `qwen_chunks.jsonl`, or run with:
+
+```bash
+ASR_EVAL_REQUIRE_COLAB_AI_JUDGE=1 colab exec -s qwen-asr-a100 --file scripts/colab_smoke_xiaoyuzhou.py
+```
+
+That setting makes Colab AI unavailability fatal.
 
 ## Evaluation honesty
 

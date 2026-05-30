@@ -43,6 +43,7 @@ CHUNK_SECONDS = int(os.environ.get("SMOKE_CHUNK_SECONDS", "45"))
 ASR_MODEL = os.environ.get("ASR_MODEL", "Qwen/Qwen3-ASR-1.7B")
 COLAB_AI_MODEL = os.environ.get("COLAB_AI_MODEL", "google/gemini-2.5-flash")
 REQUIRE_HF_TOKEN = os.environ.get("ASR_EVAL_REQUIRE_HF_TOKEN", "0") == "1"
+REQUIRE_COLAB_AI_JUDGE = os.environ.get("ASR_EVAL_REQUIRE_COLAB_AI_JUDGE", "0") == "1"
 
 
 def run(cmd: list[str], *, cwd: str | Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -173,6 +174,7 @@ def main() -> None:
     print("HF cache (persistent):", HF_CACHE_ROOT)
     print("Temp root (ephemeral):", TMP_ROOT)
     print("Require HF_TOKEN:", REQUIRE_HF_TOKEN)
+    print("Require Colab AI judge:", REQUIRE_COLAB_AI_JUDGE)
 
     mount_drive()
     configure_persistent_cache()
@@ -262,18 +264,39 @@ def main() -> None:
     print(saved["text"][:2000])
 
     print("Running google.colab.ai text-only triage. This does not listen to audio.")
-    judge_reports = judge_chunks_colab_ai(
-        qwen_rows,
-        whisper_rows=None,
-        use_case="mixed",
-        model_name=COLAB_AI_MODEL,
-        max_chunks=1,
-    )
+    try:
+        judge_reports = judge_chunks_colab_ai(
+            qwen_rows,
+            whisper_rows=None,
+            use_case="mixed",
+            model_name=COLAB_AI_MODEL,
+            max_chunks=1,
+        )
+        print("Colab AI report:")
+        print(json.dumps(judge_reports, ensure_ascii=False, indent=2))
+    except Exception as exc:
+        # google.colab.ai depends on Colab's MODEL_PROXY_API_KEY, which is often only
+        # available to notebook/UI execution and can time out under `colab exec`.
+        judge_reports = [
+            {
+                "judge_type": "text_only_colab_ai",
+                "status": "skipped_or_failed",
+                "audio_faithfulness_verified": False,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "note": (
+                    "Qwen ASR succeeded, but google.colab.ai was unavailable in CLI execution. "
+                    "Run the notebook/UI judge cell to complete Colab AI triage, or set "
+                    "ASR_EVAL_REQUIRE_COLAB_AI_JUDGE=1 to make this fatal."
+                ),
+            }
+        ]
+        if REQUIRE_COLAB_AI_JUDGE:
+            raise
+        print("WARNING: Colab AI triage unavailable under CLI; wrote skipped report:", repr(exc))
     (out_dir / "colab_ai_text_judge.json").write_text(
         json.dumps(judge_reports, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print("Colab AI report:")
-    print(json.dumps(judge_reports, ensure_ascii=False, indent=2))
 
     summary = {
         "ok": True,
