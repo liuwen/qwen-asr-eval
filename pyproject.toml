@@ -6,6 +6,8 @@ requires-python = ">=3.10"
 dependencies = [
   "qwen-asr",
   "huggingface_hub[hf_transfer]",
+  "feedparser",
+  "requests",
   "soundfile",
   "librosa",
   "pydub",

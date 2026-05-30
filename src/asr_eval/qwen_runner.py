@@ -7,10 +7,15 @@ def qwen_language_for_use_case(use_case: str) -> str | None:
     mapping = {
         "zh": "Chinese",
         "chinese": "Chinese",
+        "mandarin": "Chinese",
+        "cantonese": "Cantonese",
+        "yue": "Cantonese",
         "en": "English",
         "english": "English",
         "mixed": None,
         "auto": None,
+        "": None,
+        "none": None,
     }
     return mapping.get(str(use_case).lower(), None)
 

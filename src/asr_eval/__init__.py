@@ -7,4 +7,6 @@ __all__ = [
     "metrics",
     "colab_ai_judge",
     "reporting",
+    "presets",
+    "sources",
 ]

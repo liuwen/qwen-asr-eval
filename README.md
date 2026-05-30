@@ -65,6 +65,22 @@ Use it for:
 
 Use reference transcripts or an audio-capable evaluator for real faithfulness scoring.
 
+## Generic self-contained Colab notebook
+
+For generic release/use, prefer:
+
+```text
+notebooks/qwen3_asr_generic_colab.ipynb
+```
+
+Open it in Colab:
+
+```text
+https://colab.research.google.com/github/liuwen/qwen-asr-eval/blob/main/notebooks/qwen3_asr_generic_colab.ipynb
+```
+
+It supports Drive paths, direct download URLs, and Xiaoyuzhou episode URLs; provides T4/A100/H100 runtime presets; writes checkpointed outputs to Drive; and includes optional Colab GenAI text-only evaluation, high-fidelity proofreading, and enhancement cells.
+
 ## Recommended Colab startup
 
 With the official Colab CLI already authenticated locally:
