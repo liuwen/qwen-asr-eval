@@ -8,7 +8,7 @@ It verifies, end-to-end:
 4. Xiaoyuzhou episode audio resolution/download if missing,
 5. ffmpeg transcode to 16 kHz mono WAV,
 6. Qwen3-ASR model download/load/transcription,
-7. google.colab.ai text-only quality triage.
+7. writes a web-UI-only Colab GenAI triage placeholder.
 
 Run from local machine with an authenticated Colab CLI:
     colab exec -s qwen-asr-a100 --file scripts/colab_smoke_xiaoyuzhou.py
@@ -41,9 +41,7 @@ SMOKE_AUDIO_ID = os.environ.get("SMOKE_AUDIO_ID", "mixed_zh_en_wujimacha_22e01")
 SMOKE_SECONDS = int(os.environ.get("SMOKE_SECONDS", "45"))
 CHUNK_SECONDS = int(os.environ.get("SMOKE_CHUNK_SECONDS", "45"))
 ASR_MODEL = os.environ.get("ASR_MODEL", "Qwen/Qwen3-ASR-1.7B")
-COLAB_AI_MODEL = os.environ.get("COLAB_AI_MODEL", "google/gemini-3.5-flash")
 REQUIRE_HF_TOKEN = os.environ.get("ASR_EVAL_REQUIRE_HF_TOKEN", "0") == "1"
-REQUIRE_COLAB_AI_JUDGE = os.environ.get("ASR_EVAL_REQUIRE_COLAB_AI_JUDGE", "0") == "1"
 
 
 def run(cmd: list[str], *, cwd: str | Path | None = None, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -174,7 +172,6 @@ def main() -> None:
     print("HF cache (persistent):", HF_CACHE_ROOT)
     print("Temp root (ephemeral):", TMP_ROOT)
     print("Require HF_TOKEN:", REQUIRE_HF_TOKEN)
-    print("Require Colab AI judge:", REQUIRE_COLAB_AI_JUDGE)
 
     mount_drive()
     configure_persistent_cache()
@@ -188,7 +185,6 @@ def main() -> None:
     configure_hf_token()
 
     from asr_eval.audio import chunk_wav, ffprobe_duration, fmt_ts, write_jsonl
-    from asr_eval.colab_ai_judge import judge_chunks_colab_ai
     from asr_eval.qwen_runner import load_qwen_model, transcribe_chunks
     from asr_eval.reporting import save_transcript
     from asr_eval.xiaoyuzhou import download_file, resolve_xiaoyuzhou_audio_url, select_manifest_items
@@ -263,40 +259,20 @@ def main() -> None:
     print("Transcript preview:")
     print(saved["text"][:2000])
 
-    print("Running google.colab.ai text-only triage. This does not listen to audio.")
-    try:
-        judge_reports = judge_chunks_colab_ai(
-            qwen_rows,
-            whisper_rows=None,
-            use_case="mixed",
-            model_name=COLAB_AI_MODEL,
-            max_chunks=1,
-        )
-        print("Colab AI report:")
-        print(json.dumps(judge_reports, ensure_ascii=False, indent=2))
-    except Exception as exc:
-        # google.colab.ai depends on Colab's MODEL_PROXY_API_KEY, which is often only
-        # available to notebook/UI execution and can time out under `colab exec`.
-        judge_reports = [
-            {
-                "judge_type": "text_only_colab_ai",
-                "status": "skipped_or_failed",
-                "audio_faithfulness_verified": False,
-                "error_type": type(exc).__name__,
-                "error": str(exc),
-                "note": (
-                    "Qwen ASR succeeded, but google.colab.ai was unavailable in CLI execution. "
-                    "Run the notebook/UI judge cell to complete Colab AI triage, or set "
-                    "ASR_EVAL_REQUIRE_COLAB_AI_JUDGE=1 to make this fatal."
-                ),
-            }
-        ]
-        if REQUIRE_COLAB_AI_JUDGE:
-            raise
-        print("WARNING: Colab AI triage unavailable under CLI; wrote skipped report:", repr(exc))
+    # Colab GenAI (`google.colab.ai`) is intentionally not called from CLI scripts.
+    # It must be run from the Colab web UI, where Colab provides its internal model proxy.
+    judge_reports = [
+        {
+            "judge_type": "text_only_colab_ai",
+            "status": "not_run_cli_web_ui_required",
+            "audio_faithfulness_verified": False,
+            "note": "Qwen ASR succeeded. Run the notebook/Web UI Colab GenAI judge cell to complete text-only triage.",
+        }
+    ]
     (out_dir / "colab_ai_text_judge.json").write_text(
         json.dumps(judge_reports, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    print("Colab GenAI triage not run in CLI. Use the notebook/Web UI judge cell.")
 
     summary = {
         "ok": True,

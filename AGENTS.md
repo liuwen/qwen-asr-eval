@@ -9,7 +9,9 @@ This repo evaluates Qwen3-ASR on Colab A100 runtimes. Keep the notebook thin and
 - Public GitHub repo. Do not require `GH_TOKEN`.
 - Use Colab Secrets for `HF_TOKEN`.
 - Do not require `GEMINI_API_KEY`.
-- Use `google.colab.ai` only for text-to-text quality triage.
+- Use `google.colab.ai` only for text-to-text quality triage/proofreading/enhancement.
+- Run Colab GenAI only from the Colab Web UI; do not call it from `colab exec` scripts.
+- Do not try to use `MODEL_PROXY_API_KEY` or `GEMINI_API_KEY` for Colab GenAI.
 - Do not claim Colab AI can listen to audio or perform ASR.
 - Keep `faster-whisper` baseline optional.
 - Always preserve chunk timestamps in outputs.
