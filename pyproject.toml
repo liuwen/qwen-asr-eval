@@ -1,0 +1,26 @@
+[project]
+name = "qwen-asr-eval"
+version = "0.1.0"
+description = "Colab-first evaluation harness for Qwen3-ASR."
+requires-python = ">=3.10"
+dependencies = [
+  "qwen-asr",
+  "huggingface_hub[hf_transfer]",
+  "soundfile",
+  "librosa",
+  "pydub",
+  "tqdm",
+  "pandas",
+  "numpy",
+  "rapidfuzz",
+  "jiwer",
+  "opencc-python-reimplemented",
+  "faster-whisper",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

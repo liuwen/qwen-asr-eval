@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+.env
+.env.*
+*.egg-info/
+
+# Data / model / output artifacts
+data/
+runs/
+outputs/
+cache/
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.jsonl
+*.csv

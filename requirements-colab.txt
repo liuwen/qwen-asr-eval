@@ -1,0 +1,12 @@
+qwen-asr
+huggingface_hub[hf_transfer]
+soundfile
+librosa
+pydub
+tqdm
+pandas
+numpy
+rapidfuzz
+jiwer
+opencc-python-reimplemented
+faster-whisper
