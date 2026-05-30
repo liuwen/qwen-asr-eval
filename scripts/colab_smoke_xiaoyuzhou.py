@@ -41,7 +41,7 @@ SMOKE_AUDIO_ID = os.environ.get("SMOKE_AUDIO_ID", "mixed_zh_en_wujimacha_22e01")
 SMOKE_SECONDS = int(os.environ.get("SMOKE_SECONDS", "45"))
 CHUNK_SECONDS = int(os.environ.get("SMOKE_CHUNK_SECONDS", "45"))
 ASR_MODEL = os.environ.get("ASR_MODEL", "Qwen/Qwen3-ASR-1.7B")
-COLAB_AI_MODEL = os.environ.get("COLAB_AI_MODEL", "google/gemini-2.5-flash")
+COLAB_AI_MODEL = os.environ.get("COLAB_AI_MODEL", "google/gemini-3.5-flash")
 REQUIRE_HF_TOKEN = os.environ.get("ASR_EVAL_REQUIRE_HF_TOKEN", "0") == "1"
 REQUIRE_COLAB_AI_JUDGE = os.environ.get("ASR_EVAL_REQUIRE_COLAB_AI_JUDGE", "0") == "1"
 

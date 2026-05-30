@@ -138,7 +138,7 @@ Supported variables:
 | `SMOKE_SECONDS` | `45` | Seconds to transcode for smoke ASR |
 | `SMOKE_CHUNK_SECONDS` | `45` | Chunk length for smoke test |
 | `ASR_MODEL` | `Qwen/Qwen3-ASR-1.7B` | Qwen ASR model id |
-| `COLAB_AI_MODEL` | `google/gemini-2.5-flash` | Colab AI text judge model |
+| `COLAB_AI_MODEL` | `google/gemini-3.5-flash` | Colab AI text judge model |
 | `ASR_EVAL_REQUIRE_HF_TOKEN` | `0` | Set `1` to fail if `HF_TOKEN` is unavailable under CLI execution |
 | `ASR_EVAL_REQUIRE_COLAB_AI_JUDGE` | `0` | Set `1` to fail if `google.colab.ai` is unavailable under CLI execution |
 
