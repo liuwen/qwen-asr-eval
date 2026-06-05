@@ -1,0 +1,3 @@
+[submodule "experiments/fishaudio_s2_pro/vendor/fish-speech"]
+	path = experiments/fishaudio_s2_pro/vendor/fish-speech
+	url = https://github.com/fishaudio/fish-speech
