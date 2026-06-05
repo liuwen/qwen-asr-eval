@@ -1,6 +1,6 @@
 # Fish Audio S2 Pro Colab Experiment
 
-This experiment evaluates Fish Audio S2 Pro for TTS and authorized voice cloning on Colab GPU runtimes.
+This experiment evaluates Fish Audio S2 Pro for TTS and authorized voice cloning on Colab GPU runtimes. The current notebook is API-first: start one model engine, run fast API inference, optionally expose it, and avoid reloading the model for demos.
 
 The upstream reference implementation is vendored locally for inspection:
 
@@ -26,6 +26,12 @@ Optional for a named Cloudflare Tunnel:
 CLOUDFLARED_TUNNEL_TOKEN
 ```
 
+Optional API bearer token. If absent, the notebook generates a session token:
+
+```text
+FISHAUDIO_API_KEY
+```
+
 No `GH_TOKEN`, `GEMINI_API_KEY`, `MODEL_PROXY_API_KEY`, or Colab GenAI path is required.
 
 ## Notebook
@@ -36,7 +42,7 @@ Open or upload:
 experiments/fishaudio_s2_pro/fishaudio_s2_pro_colab.ipynb
 ```
 
-The notebook clones `https://github.com/fishaudio/fish-speech.git` directly, checks out the pinned `FISH_SPEECH_REF`, installs the upstream Fish Speech environment with `uv`, downloads `fishaudio/s2-pro`, runs API smoke tests, and can launch the upstream web demos.
+The notebook clones `https://github.com/fishaudio/fish-speech.git` directly, checks out the pinned `FISH_SPEECH_REF`, installs the upstream Fish Speech environment with `uv`, downloads `fishaudio/s2-pro`, starts one long-lived authenticated API server, and runs a minimal TTS showcase through that API.
 
 There is no `PUBLIC_REPO_URL`, no `PUBLIC_REPO_BRANCH`, and no submodule setup in the notebook.
 
@@ -49,16 +55,18 @@ Model artifacts from Hugging Face must stay ephemeral under `/content`:
 /content/fishaudio_s2_pro/cache
 ```
 
-Google Drive is only for our own artifacts:
+Google Drive is not mounted by default. Generated artifacts stay ephemeral unless explicitly downloaded:
 
 ```text
-/content/drive/MyDrive/voice/fishaudio-s2-pro/runs/<run_id>/
+/content/fishaudio_s2_pro/artifacts/runs/<run_id>/
   logs/
   outputs/
   manifests/
 ```
 
-Reference audio copies are not written to Drive by default. The notebook exposes `SAVE_REFERENCE_COPY_TO_DRIVE` for cases where a durable private copy is explicitly wanted.
+The notebook uses `google.colab.files.upload()` for optional reference audio and `google.colab.files.download()` for output files or a zipped run directory. If `MOUNT_DRIVE=True`, only our own artifacts move to Drive; HF model files still remain under `/content`.
+
+Reference audio copies are not written to artifacts by default. The notebook exposes `SAVE_REFERENCE_COPY_TO_ARTIFACTS` for cases where a durable private copy is explicitly wanted.
 
 The HF model download cell writes CLI output to:
 
@@ -70,9 +78,33 @@ If Colab restarts during download, inspect that log and lower `HF_DOWNLOAD_WORKE
 in the notebook. The default is intentionally conservative (`2`) to reduce
 kernel pressure.
 
-## Web Demo and API Shape
+## Upstream Findings
 
-The upstream Gradio demo builds a `ServeTTSRequest` from:
+The Fish Speech repo currently has several behaviors that matter on Colab:
+
+- `tools/api_server.py` creates one `TTSInferenceEngine` through `ModelManager`.
+- `tools/run_webui.py` creates a separate `TTSInferenceEngine`; starting Gradio after the API server reloads the full model.
+- `awesome_webui` is only a frontend. It calls `fetch('/v1/tts')` and is served by `tools/api_server.py` at `/ui` after `npm run build`.
+- Both API and Gradio warm up with `max_new_tokens=1024`; this is heavy for a startup smoke.
+- `fish_speech/models/text2semantic/inference.py` forces `SDPBackend.MATH` inside the decode loop, which is a poor default for A100-class CUDA attention.
+- The inference path clears CUDA cache after requests, which is useful defensively but adds overhead for repeated short calls.
+
+The notebook applies local runtime patches to the cloned Fish Speech tree, not to the vendored submodule:
+
+```text
+allow_flash_attention_backends
+guard_text2semantic_cuda_cache_clear
+guard_engine_cuda_cache_clear
+light_warmup_tools/server/model_manager.py
+light_warmup_tools/run_webui.py
+awesome_default_max_tokens
+```
+
+These patches are recorded in each run manifest.
+
+## API Shape
+
+The upstream API builds a `ServeTTSRequest` from:
 
 - input text,
 - optional `reference_id`,
@@ -92,28 +124,45 @@ The notebook preserves this flow in its inline helper functions so a future cust
 Upstream WebUI/server paths checked against Fish Speech:
 
 ```text
-tools/run_webui.py                      # Gradio WebUI
 tools/api_server.py                     # Kui/uvicorn API server
 tools/server/views.py                   # /ui route for Awesome WebUI
-awesome_webui/dist/index.html           # built frontend served at /ui
+awesome_webui/src/App.tsx               # frontend calls /v1/tts
+tools/run_webui.py                      # Gradio WebUI, separate model engine
 ```
 
 ## Cloudflare Tunnel
 
-The notebook follows the named tunnel pattern:
+The API server starts with bearer auth when `ENABLE_API_AUTH=True`. The notebook can expose the same local API server with either a quick or named Cloudflare Tunnel:
+
+```text
+PUBLIC_TUNNEL_MODE = none | cloudflare_quick | cloudflare_named
+```
+
+Quick tunnel:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:8080 --no-autoupdate
+```
+
+Named tunnel:
 
 ```bash
 cloudflared tunnel --no-autoupdate run --token <CLOUDFLARED_TUNNEL_TOKEN>
 ```
 
-Configure the tunnel in Cloudflare so its origin points to the active local web demo:
+For named tunnels, configure the Cloudflare origin as:
 
 ```text
-Gradio WebUI:  http://127.0.0.1:7860
-Awesome WebUI: http://127.0.0.1:8888
+http://127.0.0.1:8080
 ```
 
-The notebook does not print the tunnel token.
+The notebook does not print the Cloudflare tunnel token. It prints the generated API bearer token only when the token was generated in-session or typed as a parameter; tokens loaded from Colab Secrets are not printed.
+
+## Web UI
+
+The speed path is API-only. `START_GRADIO_WEBUI=False` by default because Gradio starts another full model engine.
+
+`BUILD_AWESOME_WEBUI=True` can build and serve `/ui` from the existing API server, but upstream bearer auth also protects the initial `/ui` page load. For a browser UI, either disable upstream API auth and put Cloudflare Access/Tailscale in front, or stay with the authenticated API-only tunnel.
 
 ## Local Development
 

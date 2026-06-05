@@ -25,11 +25,32 @@ def make_fake_repo(path: Path) -> None:
         "tools/api_server.py",
         "tools/server/views.py",
         "awesome_webui/package.json",
+        "awesome_webui/src/App.tsx",
+        "fish_speech/inference_engine/__init__.py",
+        "fish_speech/models/text2semantic/inference.py",
     ]
     for rel in required:
         target = path / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text("mock\n", encoding="utf-8")
+    (path / "tools" / "run_webui.py").write_text("max_new_tokens=1024,\n", encoding="utf-8")
+    (path / "tools" / "server" / "model_manager.py").parent.mkdir(parents=True, exist_ok=True)
+    (path / "tools" / "server" / "model_manager.py").write_text("max_new_tokens=1024,\n", encoding="utf-8")
+    (path / "awesome_webui" / "src" / "App.tsx").write_text("  maxNewTokens: 2048,\n", encoding="utf-8")
+    (path / "fish_speech" / "inference_engine" / "__init__.py").write_text(
+        "import gc\n"
+        "        if torch.cuda.is_available():\n"
+        "            torch.cuda.empty_cache()\n"
+        "            gc.collect()\n",
+        encoding="utf-8",
+    )
+    (path / "fish_speech" / "models" / "text2semantic" / "inference.py").write_text(
+        "import os\n"
+        "        with sdpa_kernel(SDPBackend.MATH):\n"
+        "                if torch.cuda.is_available():\n"
+        "                    torch.cuda.empty_cache()\n",
+        encoding="utf-8",
+    )
     dist = path / "awesome_webui" / "dist"
     dist.mkdir(parents=True, exist_ok=True)
     (dist / "index.html").write_text("<html></html>\n", encoding="utf-8")
@@ -83,13 +104,15 @@ def main() -> int:
             "MOUNT_DRIVE": False,
             "FISH_REPO_PATH": str(fish_repo),
             "WORK_ROOT_PATH": str(work_root),
+            "ARTIFACT_ROOT_PATH": str(drive_root),
             "DRIVE_ROOT_PATH": str(drive_root),
             "RUN_ID": "papermill_dry_run",
             "REFERENCE_AUDIO_PATH": str(reference_audio),
             "REFERENCE_TEXT": "Dry run reference transcript.",
             "VOICE_ID": "dry_run_voice",
-            "WEB_DEMO_MODE": "gradio",
-            "START_CLOUDFLARE_TUNNEL": False,
+            "BUILD_AWESOME_WEBUI": False,
+            "START_GRADIO_WEBUI": False,
+            "PUBLIC_TUNNEL_MODE": "none",
         }
 
         print("Executing Papermill dry run with parameters:")
