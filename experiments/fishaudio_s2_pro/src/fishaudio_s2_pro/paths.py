@@ -10,6 +10,18 @@ def default_run_id(prefix: str = "fishaudio_s2_pro") -> str:
     return f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
 
 
+def resolve_project_root(project_root: str | Path) -> Path:
+    root = Path(project_root)
+    if (root / "vendor" / "fish-speech").exists():
+        return root
+
+    nested = root / "experiments" / "fishaudio_s2_pro"
+    if (nested / "vendor" / "fish-speech").exists():
+        return nested
+
+    return root
+
+
 @dataclass(frozen=True)
 class ExperimentPaths:
     """Runtime paths for the Colab experiment.
@@ -39,7 +51,7 @@ class ExperimentPaths:
         drive_root: str | Path = "/content/drive/MyDrive/voice/fishaudio-s2-pro",
         run_id: str | None = None,
     ) -> "ExperimentPaths":
-        project_root = Path(project_root)
+        project_root = resolve_project_root(project_root)
         work_root = Path(work_root)
         drive_root = Path(drive_root)
         run_id = run_id or os.environ.get("FISHAUDIO_RUN_ID") or default_run_id()

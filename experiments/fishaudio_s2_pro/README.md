@@ -46,6 +46,17 @@ PUBLIC_REPO_BRANCH = "exp/fishaudio"
 
 After merge, change it to the branch that contains this experiment.
 
+If Colab reports a missing submodule at `/content/qwen-asr-eval/vendor/fish-speech`,
+the notebook or helper was pointed at the repo root instead of the experiment root.
+The correct path is:
+
+```text
+/content/qwen-asr-eval/experiments/fishaudio_s2_pro/vendor/fish-speech
+```
+
+Re-run the clone/submodule cell and install the helper from `EXPERIMENT_DIR`, not
+the repo-root `requirements-colab.txt` used by the Qwen ASR workflow.
+
 ## Storage Policy
 
 Model artifacts from Hugging Face must stay ephemeral under `/content`:

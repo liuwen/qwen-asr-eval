@@ -1,7 +1,7 @@
 """Helpers for the Fish Audio S2 Pro Colab experiment."""
 
 from .api import post_tts
-from .paths import ExperimentPaths
+from .paths import ExperimentPaths, resolve_project_root
 from .processes import (
     ManagedProcess,
     start_api_server,
@@ -26,6 +26,7 @@ __all__ = [
     "prepare_reference_voice",
     "read_colab_secret",
     "require_minimum_vram",
+    "resolve_project_root",
     "resolve_fish_uv_extra",
     "sanitize_voice_id",
     "start_api_server",
