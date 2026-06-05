@@ -124,6 +124,14 @@ uv sync --python 3.12
 uv run python -m compileall -q src
 ```
 
+Before pushing notebook changes, run the mocked Colab notebook executor:
+
+```bash
+python3 scripts/validate_colab_notebook.py
+```
+
+This parses every code cell, executes the notebook in order with Drive/GPU/git/HF/server mocks, and also executes each non-bootstrap cell in isolation to ensure skipped-cell/kernel-restart failures raise the explicit bootstrap error instead of raw `NameError`s.
+
 Do not edit `vendor/fish-speech` for helper behavior. Keep custom code in `src/fishaudio_s2_pro/`.
 
 ## References
