@@ -74,9 +74,7 @@ The HF model download cell writes CLI output to:
 logs/hf_download.log
 ```
 
-If Colab restarts during download, inspect that log and lower `HF_DOWNLOAD_WORKERS`
-in the notebook. The default is intentionally conservative (`2`) to reduce
-kernel pressure.
+The notebook runs `hf download` through `script(1)` so the CLI sees a pseudo-terminal and can render progress bars. It also prints a separate `[hf-progress]` heartbeat every `HF_DOWNLOAD_PROGRESS_INTERVAL_SECONDS` with the current checkpoint directory size and file count. If Colab restarts during download, inspect that log and lower `HF_DOWNLOAD_WORKERS` in the notebook. The default is intentionally conservative (`2`) to reduce kernel pressure.
 
 ## Upstream Findings
 
