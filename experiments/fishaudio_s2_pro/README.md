@@ -64,7 +64,7 @@ Google Drive is not mounted by default. Generated artifacts stay ephemeral unles
   manifests/
 ```
 
-The notebook uses `google.colab.files.upload()` for optional reference audio and `google.colab.files.download()` for output files or a zipped run directory. If `MOUNT_DRIVE=True`, only our own artifacts move to Drive; HF model files still remain under `/content`.
+The notebook uses `google.colab.files.upload()` for optional reference audio and `google.colab.files.download()` for output files or a zipped run directory. To upload reference audio for cloning, use cell 7: set `UPLOAD_REFERENCE_AUDIO=True`, fill `REFERENCE_TEXT`, run the cell, then run the reference TTS cell. If `MOUNT_DRIVE=True`, only our own artifacts move to Drive; HF model files still remain under `/content`.
 
 Reference audio copies are not written to artifacts by default. The notebook exposes `SAVE_REFERENCE_COPY_TO_ARTIFACTS` for cases where a durable private copy is explicitly wanted.
 
@@ -141,7 +141,7 @@ PUBLIC_TUNNEL_MODE = none | cloudflare_quick | cloudflare_named
 Quick tunnel:
 
 ```bash
-cloudflared tunnel --url http://127.0.0.1:8080 --no-autoupdate
+cloudflared tunnel --url http://127.0.0.1:7860 --no-autoupdate
 ```
 
 Named tunnel:
@@ -153,7 +153,7 @@ cloudflared tunnel --no-autoupdate run --token <CLOUDFLARED_TUNNEL_TOKEN>
 For named tunnels, configure the Cloudflare origin as:
 
 ```text
-http://127.0.0.1:8080
+http://127.0.0.1:7860
 ```
 
 The notebook does not print the Cloudflare tunnel token. It prints the generated API bearer token only when the token was generated in-session or typed as a parameter; tokens loaded from Colab Secrets are not printed.
@@ -162,7 +162,9 @@ The notebook does not print the Cloudflare tunnel token. It prints the generated
 
 The speed path is API-only. `START_GRADIO_WEBUI=False` by default because Gradio starts another full model engine.
 
-`BUILD_AWESOME_WEBUI=True` can build and serve `/ui` from the existing API server, but upstream bearer auth also protects the initial `/ui` page load. For a browser UI, either disable upstream API auth and put Cloudflare Access/Tailscale in front, or stay with the authenticated API-only tunnel.
+The API server defaults to port `7860` for Colab compatibility. If Gradio is explicitly enabled, the notebook starts it on `7861` to avoid colliding with the API server.
+
+`BUILD_AWESOME_WEBUI=True` can build and serve `/ui` from the existing API server. The code is in the cloned Fish Speech checkout at `awesome_webui/src/App.tsx`, and the built file is served from `awesome_webui/dist/index.html` through `tools/server/views.py`. Upstream bearer auth also protects the initial `/ui` page load, so for a browser UI either disable upstream API auth and put Cloudflare Access/Tailscale in front, or stay with the authenticated API-only tunnel.
 
 ## Local Development
 
