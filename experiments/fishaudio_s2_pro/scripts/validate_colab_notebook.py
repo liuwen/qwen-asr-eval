@@ -147,9 +147,10 @@ def main() -> int:
                 print(f"[mock notebook] executing code cell {index}")
                 exec(compile(source, f"{NOTEBOOK}:code-cell-{index}", "exec"), env)
                 if index == 0:
-                    env["FISH_REPO"] = fish_repo
-                    env["WORK_ROOT"] = work_root
-                    env["DRIVE_ROOT"] = drive_root
+                    env["FISH_REPO_PATH"] = str(fish_repo)
+                    env["WORK_ROOT_PATH"] = str(work_root)
+                    env["DRIVE_ROOT_PATH"] = str(drive_root)
+                    env["RUN_ID"] = "mock_notebook_run"
                     env["MOUNT_DRIVE"] = True
                 if "CHECKPOINT_DIR" in env:
                     checkpoint = Path(env["CHECKPOINT_DIR"])
@@ -162,7 +163,7 @@ def main() -> int:
             if real_urlopen is not None:
                 urllib.request.urlopen = real_urlopen
 
-    for index, source in enumerate(cells[1:], start=1):
+    for index, source in enumerate(cells[2:], start=2):
         try:
             exec(compile(source, f"{NOTEBOOK}:isolated-code-cell-{index}", "exec"), {"__name__": "__main__"})
         except RuntimeError as exc:

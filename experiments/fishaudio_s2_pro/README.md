@@ -132,6 +132,20 @@ python3 scripts/validate_colab_notebook.py
 
 This parses every code cell, executes the notebook in order with Drive/GPU/git/HF/server mocks, and also executes each non-bootstrap cell in isolation to ensure skipped-cell/kernel-restart failures raise the explicit bootstrap error instead of raw `NameError`s.
 
+Then run the real Jupyter/Papermill dry-run path through the uv project:
+
+```bash
+uv run python scripts/papermill_dry_run.py
+```
+
+This uses the notebook's Papermill `parameters` cell, injects `DRY_RUN=True`, creates a fake Fish Speech checkout plus reference audio in a temporary workspace, and executes the whole notebook with a project-local ipykernel. It writes the executed notebook to:
+
+```text
+runs/papermill/fishaudio_s2_pro_colab.dry_run.ipynb
+```
+
+That output is ignored by git. Papermill proves real notebook execution and parameter injection; it still intentionally skips Drive auth, model download, GPU model loading, server startup, and tunnels.
+
 Do not edit `vendor/fish-speech` for helper behavior. Keep custom code in `src/fishaudio_s2_pro/`.
 
 ## References
