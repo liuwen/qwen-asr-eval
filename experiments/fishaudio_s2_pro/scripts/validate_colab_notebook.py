@@ -65,13 +65,20 @@ def install_colab_mocks() -> None:
     colab = types.ModuleType("google.colab")
     drive = types.SimpleNamespace(mount=lambda path: print(f"[mock] drive.mount({path})"))
     userdata = types.SimpleNamespace(get=lambda name: f"mock-{name.lower()}")
+    output = types.SimpleNamespace(
+        eval_js=lambda script: f"https://colab.mock/proxy/{script.split('proxyPort(')[1].split(')')[0]}"
+        if "proxyPort(" in script
+        else "mock-js-result"
+    )
     colab.drive = drive
     colab.userdata = userdata
+    colab.output = output
     google.colab = colab
     sys.modules["google"] = google
     sys.modules["google.colab"] = colab
     sys.modules["google.colab.drive"] = drive
     sys.modules["google.colab.userdata"] = userdata
+    sys.modules["google.colab.output"] = output
 
     ipython = types.ModuleType("IPython")
     display_mod = types.ModuleType("IPython.display")

@@ -46,6 +46,12 @@ The notebook clones `https://github.com/fishaudio/fish-speech.git` directly, che
 
 There is no `PUBLIC_REPO_URL`, no `PUBLIC_REPO_BRANCH`, and no submodule setup in the notebook.
 
+The default showcase text is:
+
+```text
+[chuckle] When you're creating something new, theres this [emphasis] beautiful mix of wonder and fear
+```
+
 ## Storage Policy
 
 Model artifacts from Hugging Face must stay ephemeral under `/content`:
@@ -163,6 +169,18 @@ The speed path is API-only. `START_GRADIO_WEBUI=False` by default because Gradio
 The API server defaults to port `7860` for Colab compatibility. If Gradio is explicitly enabled, the notebook starts it on `7861` to avoid colliding with the API server.
 
 `BUILD_AWESOME_WEBUI=True` can build and serve `/ui` from the existing API server. The code is in the cloned Fish Speech checkout at `awesome_webui/src/App.tsx`, and the built file is served from `awesome_webui/dist/index.html` through `tools/server/views.py`. Upstream bearer auth also protects the initial `/ui` page load, so for a browser UI either disable upstream API auth and put Cloudflare Access/Tailscale in front, or stay with the authenticated API-only tunnel.
+
+In Colab, localhost URLs are not directly reachable from your browser. The notebook prints Colab-proxied URLs using `google.colab.kernel.proxyPort(...)`, including the API base, `/v1/tts`, Awesome `/ui`, and optional Gradio URL.
+
+## Downloads
+
+Outputs are written under:
+
+```text
+/content/fishaudio_s2_pro/artifacts/runs/<run_id>/outputs/
+```
+
+The final cell prints every generated output path. To download everything for the run, set `DOWNLOAD_RUN_ZIP=True` and rerun the final cell; it creates `<run_id>_artifacts.zip` inside the run directory and sends it through `google.colab.files.download()`.
 
 ## Local Development
 
