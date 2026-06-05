@@ -2,13 +2,13 @@
 
 This experiment evaluates Fish Audio S2 Pro for TTS and authorized voice cloning on Colab GPU runtimes.
 
-The upstream reference implementation is vendored as a submodule:
+The upstream reference implementation is vendored locally for inspection:
 
 ```text
 vendor/fish-speech -> https://github.com/fishaudio/fish-speech
 ```
 
-This repo owns the helper package, notebook workflow, run manifests, reference preparation, and future custom Colab API wrapping. The upstream repo is used to understand and run the model, API server, and WebUI behavior.
+The Colab notebook does not depend on this repo at runtime. It clones Fish Speech directly into `/content/fish-speech`, installs Fish Speech with `uv`, and defines the small runtime helpers inline. This repo owns the notebook and local helper/reference code for future custom API work.
 
 ## Required Colab Setup
 
@@ -36,26 +36,9 @@ Open or upload:
 experiments/fishaudio_s2_pro/fishaudio_s2_pro_colab.ipynb
 ```
 
-The notebook clones this public repo with submodules, installs this helper project with `uv`, installs the upstream Fish Speech environment with `uv`, downloads `fishaudio/s2-pro`, runs API smoke tests, and can launch the upstream web demos.
+The notebook clones `https://github.com/fishaudio/fish-speech.git` directly, checks out the pinned `FISH_SPEECH_REF`, installs the upstream Fish Speech environment with `uv`, downloads `fishaudio/s2-pro`, runs API smoke tests, and can launch the upstream web demos.
 
-If this branch has not been merged, keep:
-
-```text
-PUBLIC_REPO_BRANCH = "exp/fishaudio"
-```
-
-After merge, change it to the branch that contains this experiment.
-
-If Colab reports a missing submodule at `/content/qwen-asr-eval/vendor/fish-speech`,
-the notebook or helper was pointed at the repo root instead of the experiment root.
-The correct path is:
-
-```text
-/content/qwen-asr-eval/experiments/fishaudio_s2_pro/vendor/fish-speech
-```
-
-Re-run the clone/submodule cell and install the helper from `EXPERIMENT_DIR`, not
-the repo-root `requirements-colab.txt` used by the Qwen ASR workflow.
+There is no `PUBLIC_REPO_URL`, no `PUBLIC_REPO_BRANCH`, and no submodule setup in the notebook.
 
 ## Storage Policy
 
@@ -104,7 +87,16 @@ The upstream engine then:
 4. decodes generated VQ codes through the DAC decoder;
 5. returns generated audio.
 
-The helper package preserves this flow so a future custom wrapped HTTP API can target the same concepts without depending on Gradio.
+The notebook preserves this flow in its inline helper functions so a future custom wrapped HTTP API can target the same concepts without depending on Gradio.
+
+Upstream WebUI/server paths checked against Fish Speech:
+
+```text
+tools/run_webui.py                      # Gradio WebUI
+tools/api_server.py                     # Kui/uvicorn API server
+tools/server/views.py                   # /ui route for Awesome WebUI
+awesome_webui/dist/index.html           # built frontend served at /ui
+```
 
 ## Cloudflare Tunnel
 
