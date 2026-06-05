@@ -77,6 +77,16 @@ Google Drive is only for our own artifacts:
 
 Reference audio copies are not written to Drive by default. The notebook exposes `SAVE_REFERENCE_COPY_TO_DRIVE` for cases where a durable private copy is explicitly wanted.
 
+The HF model download cell writes CLI output to:
+
+```text
+logs/hf_download.log
+```
+
+If Colab restarts during download, inspect that log and lower `HF_DOWNLOAD_WORKERS`
+in the notebook. The default is intentionally conservative (`2`) to reduce
+kernel pressure.
+
 ## Web Demo and API Shape
 
 The upstream Gradio demo builds a `ServeTTSRequest` from:
